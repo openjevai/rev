@@ -8,6 +8,11 @@
 
 `Client(url, key)` also talks to TypeSafe's own endpoint, since the protocol is
 the same: `Client("https://api.typesafe.ai", key=...)`.
+
+OpenJEV is a free community gateway to the same Jev model:
+`Client.openjev(key=...)` or `Client("https://api.openjev.sh", key=...,
+model="openjev")`. TypeSafe stays the default; use OpenJEV when you set
+``OPENJEV_API_KEY`` (or pass ``JEV_PROVIDER=openjev``).
 """
 
 from __future__ import annotations
@@ -19,6 +24,13 @@ from typing import Any, Mapping
 
 from .decision import Decision
 from .serve import DEFAULT_PORT
+
+# Hosted endpoints — the protocol is the same, only the URL, model id and key
+# differ.  TypeSafe is the default; OpenJEV is an optional community gateway.
+TYPESAFE_URL = "https://api.typesafe.ai"
+TYPESAFE_MODEL = "jev-latest"
+OPENJEV_URL = "https://api.openjev.sh"
+OPENJEV_MODEL = "openjev"
 
 
 class RevError(RuntimeError):
@@ -32,9 +44,20 @@ class RevError(RuntimeError):
 
 class Client:
     def __init__(self, url: str = f"http://127.0.0.1:{DEFAULT_PORT}", key: str | None = None,
-                 model: str = "jev-latest", timeout: float = 120):
+                 model: str = TYPESAFE_MODEL, timeout: float = 120):
         self.url = url.rstrip("/") + "/v1/systemone"
         self.key, self.model, self.timeout = key, model, timeout
+
+    @classmethod
+    def openjev(cls, key: str | None = None, timeout: float = 120) -> "Client":
+        """A client for the OpenJEV community gateway (https://openjev.sh).
+
+        ``key`` defaults to ``$OPENJEV_API_KEY``.  The protocol is identical to
+        TypeSafe's; only the endpoint, model id and key differ.
+        """
+        import os
+        return cls(OPENJEV_URL, key=key or os.environ.get("OPENJEV_API_KEY"),
+                   model=OPENJEV_MODEL, timeout=timeout)
 
     def ask(self, state: Any, questions: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
         """Jev's request and response, verbatim."""

@@ -47,6 +47,7 @@ def main() -> int:
     p.add_argument("--bits", type=int, default=8)
     p.add_argument("--orders", default="auto", choices=("one", "two", "auto"))
     p.add_argument("--jev", action="store_true", help="measure api.typesafe.ai instead of rev")
+    p.add_argument("--openjev", action="store_true", help="measure api.openjev.sh instead of rev")
     p.add_argument("--key-file", default="~/typesafe.txt")
     p.add_argument("--out", type=Path, help="write per-item results here (JSON)")
     from rev.remote import add_engine_args, engine_from_args
@@ -62,6 +63,21 @@ def main() -> int:
         name, mode = "Jev (api.typesafe.ai)", "hosted"
         def decide(r):
             q = dict(r["question"])                    # Jev's own shape, sent as is
+            t0 = time.perf_counter()
+            ans = client.ask(r["state"], {"q": q})["answers"]["q"]
+            dt = time.perf_counter() - t0
+            if q["type"] == "noul":
+                pr = {"yes": ans["noul"], "no": 1 - ans["noul"]}
+            else:
+                pr = {str(k): v for k, v in ans["probabilities"].items()}
+            choice = max(pr, key=pr.get)
+            return choice, pr, float(ans.get("confidence", pr[choice])), dt
+    elif a.openjev:
+        from rev import Client
+        client = Client.openjev()
+        name, mode = "Jev (api.openjev.sh)", "hosted"
+        def decide(r):
+            q = dict(r["question"])
             t0 = time.perf_counter()
             ans = client.ask(r["state"], {"q": q})["answers"]["q"]
             dt = time.perf_counter() - t0

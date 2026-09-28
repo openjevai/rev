@@ -65,6 +65,7 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--url", default="http://127.0.0.1:8421")
     p.add_argument("--jev", action="store_true", help="measure api.typesafe.ai instead")
+    p.add_argument("--openjev", action="store_true", help="measure api.openjev.sh instead")
     p.add_argument("--key-file", default="~/typesafe.txt")
     p.add_argument("--parallel", type=int, default=8)
     p.add_argument("--label", help="name of the results file, speed-<label>.json "
@@ -75,6 +76,8 @@ def main() -> int:
     if a.jev:
         client, label = Client("https://api.typesafe.ai",
                                key=Path(a.key_file).expanduser().read_text().strip()), "jev"
+    elif a.openjev:
+        client, label = Client.openjev(), "openjev"
     else:
         client, label = Client(a.url), "rev"
     label = a.label or label

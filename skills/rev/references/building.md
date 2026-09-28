@@ -27,14 +27,20 @@ rev.noul(state, "Is this spam?")                                                
 ```
 
 `Client.ask` raises `rev.client.RevError` with `.status` (None when
-unreachable, 502 while the served model is between restarts, 400 for a bad
-question). Anything else: `POST $REV_URL/v1/systemone` with
+unreachable, 502 while the served model is between restarts, 503 when the
+hosted endpoint is temporarily unavailable, 400 for a bad question). Anything else: `POST $REV_URL/v1/systemone` with
 `{"state": ..., "questions": {...}}`; the response is
 `{"answers": {id: {...}}, "usage": {...}, "seconds": ...}`.
 
 The same client talks to TypeSafe's hosted Jev:
 `Client("https://api.typesafe.ai", key=...)`. Jev takes no images; rev does
 when its model is a vision model. Keep keys server-side.
+
+OpenJEV (https://openjev.sh) is a free community gateway to the same Jev model:
+`Client.openjev(key=...)` (key defaults to `$OPENJEV_API_KEY`). The protocol is
+identical; only the endpoint, model id (`openjev`), and key differ. TypeSafe
+stays the default — use OpenJEV when you set `OPENJEV_API_KEY` or
+`JEV_PROVIDER=openjev`.
 
 ## Shapes that work
 

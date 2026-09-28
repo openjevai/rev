@@ -25,6 +25,12 @@ d.above(0.9)      # 'billing', or None when it should go to a person
 No training, no adapter, no API key. The model is an ordinary open checkpoint;
 everything here is how it is asked and how its logits are read.
 
+> **OpenJEV support:** Jev is built by [TypeSafe](https://typesafe.ai). This
+> fork keeps TypeSafe as the default and adds optional support for
+> [OpenJEV](https://openjev.sh), a free community gateway to the same Jev
+> model — set `OPENJEV_API_KEY` (or `JEV_PROVIDER=openjev`) to use it. Original
+> project: https://github.com/54yyyu/rev by @54yyyu.
+
 ## A local Jev
 
 `rev serve` answers TypeSafe's endpoint on this machine: same route, same
@@ -49,6 +55,7 @@ From Python, without loading a model in your own process:
 from rev import Client
 rev = Client()                                    # the local server
 jev = Client("https://api.typesafe.ai", key=...)  # the same calls, against Jev
+openjev = Client.openjev()                        # OpenJEV gateway, key from $OPENJEV_API_KEY
 rev.decide(state, "Which team?", {"billing": "...", "technical": "..."}).choice
 rev.noul(state, "Does this convey urgency?")      # probability of yes
 ```
